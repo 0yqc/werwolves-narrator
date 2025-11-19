@@ -1,7 +1,5 @@
 import time, random
 
-from charset_normalizer.cd import characters_popularity_compare
-
 characters = {
 	'd': 'dorfbewohner',
 
@@ -41,15 +39,15 @@ characters = {
 	'g': 'goethe',
 	'mm': 'milchmann',
 }
-characters_first_night = [
+characters_first_night = (
 	'doppelgängerin',
-	'freimaurer',
 	'amor',
 	'jaguar',
 	'wolfskind',
-]
-characters_night = [
+)
+characters_night = (
 	'trunkenbold',
+	'freimaurer',
 	'kultführer',
 	'priester',
 	'leibwächter',
@@ -63,11 +61,11 @@ characters_night = [
 	'alte vettel',
 	'beschwörerin',
 	'goethe',
-	'milchmann'
-]
-characters_alternate_night = [
-	'weißer werwolf'
-]
+	'milchmann',
+)
+characters_alternate_night = (
+	'weißer werwolf',
+)
 
 
 def intinp(txt: str) -> int:
@@ -123,13 +121,11 @@ def character_action(character: str, data: dict) -> dict:
 			gd = intinp('Wähle deine gedoppelte Person: ')
 			data.update({'doubled_person': gd})
 			data.update({'doubled_role': data['roles'][gd - 1]})
-		elif character == 'freimaurer':
-			input()
 		elif character in ('amor', 'jaguar'):
 			dg_second_action = True
 			v1 = intinp('1. Verliebter: ')
 			v2 = intinp('2. Verliebter: ')
-			data['love'].append((v1, v2))
+			data['love'].add((v1, v2))
 		elif character == 'wolfskind':
 			dg_second_action = True
 			print('Wähle dein Idol.')
@@ -137,8 +133,13 @@ def character_action(character: str, data: dict) -> dict:
 		elif character == 'trunkenbold':
 			dg_second_action = True
 			no = intinp('Wähle deinen heutigen Nächtigungsort: ')
-			data['protected'].append(data['roles'].index('trunkenbold'))
+			data['protected'].add(data['roles'].index('trunkenbold'))
 			data.update({'round_tb': no})
+		elif character == 'freimaurer':
+			input()
+		elif character == 'kultführer':
+			data['cult'].add(intinp('Füge eine Person zum Kult hinzu: '))
+			
 		if character == data['doubled_role'] and dg_second_action and i == 0:
 			print()
 			print('Doppelgängerin-Aktion:')
@@ -152,8 +153,9 @@ def main():
 	players = intinp('Anzahl Spieler: ')
 	characters_game = gen_roles(inp_characters(players))
 	data: dict = {
-		'love': [],
-		'protected': [],
+		'love': {},
+		'protected': {},
+		'cult': {},
 	}
 	data.update({'roles': characters_game})
 	nightnum = 0
@@ -177,6 +179,7 @@ def main():
 		print('Das Dorf wacht auf.')
 		print(data)
 		nightnum += 1
+
 
 if __name__ == "__main__":
 	main()
