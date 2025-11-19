@@ -1,82 +1,6 @@
 import time, random
-
-characters = {
-	'd': 'dorfbewohner',
-
-	'w': 'werwolf',
-	'v': 'vampir',
-
-	'fm': 'freimaurer',
-
-	'wj': 'wolfsjunges',
-	'wk': 'wolfskind',
-	'vf': 'verfluchter',
-	'ww': 'weißer werwolf',
-
-	'dg': 'doppelgängerin',
-
-	'tb': 'trunkenbold',
-	'ge': 'gerber',
-
-	'h': 'hexe',
-	'm': 'magier',
-	'kf': 'kultführer',
-
-	's': 'seherin',
-	's2': 'seher',
-	'as': 'aura-seherin',
-	'sl': 'seher-lehrling',
-
-	'a': 'amor',
-	'j': 'jäger',
-	'ja': 'jaguar',
-
-	'p': 'priester',
-	'lw': 'leibwächter',
-
-	'av': 'alte vettel',
-	'b': 'beschwörerin',
-	'g': 'goethe',
-	'mm': 'milchmann',
-}
-characters_first_night = (
-	'doppelgängerin',
-	'amor',
-	'jaguar',
-	'wolfskind',
-)
-characters_night = (
-	'trunkenbold',
-	'freimaurer',
-	'kultführer',
-	'priester',
-	'leibwächter',
-	'seherin',
-	'seher',
-	'aura-seherin',
-	'werwolf',
-	'hexe',
-	'magier',
-	'vampir',
-	'alte vettel',
-	'beschwörerin',
-	'goethe',
-	'milchmann',
-)
-characters_alternate_night = (
-	'weißer werwolf',
-)
-
-
-def intinp(txt: str) -> int:
-	inp = None
-	while type(inp) != int:
-		inp = input(txt)
-		try:
-			inp = int(inp)
-		except ValueError:
-			print('Gebe eine Zahl ein.')
-	return inp
+import actions, utils
+import data as gdata
 
 
 def inp_characters(n: int) -> tuple:
@@ -86,12 +10,12 @@ def inp_characters(n: int) -> tuple:
 		if not inp:
 			print('Not enough roles')
 			continue
-		if inp in characters:
-			inp = characters[inp]
-		if not inp in characters.values():
+		if inp in gdata.abreviations:
+			inp = gdata.abreviations[inp]
+		if not inp in gdata.abreviations.values():
 			continue
 		if inp in ['dorfbewohner', 'werwolf', 'vampir', 'freimaurer']:
-			count = intinp('Anzahl: ')
+			count = utils.intinp('Anzahl: ')
 		else:
 			count = 1
 		n -= count
@@ -113,72 +37,48 @@ def gen_roles(characters_game: tuple) -> tuple:
 	return tuple(characters_game)
 
 
-def character_action(character: str, data: dict) -> dict:
-	role = None
-	for i in range(2):
-		dg_second_action = None
-		if character == 'doppelgängerin':
-			gd = intinp('Wähle deine gedoppelte Person: ')
-			data.update({'doubled_person': gd})
-			data.update({'doubled_role': data['roles'][gd - 1]})
-		elif character in ('amor', 'jaguar'):
-			dg_second_action = True
-			v1 = intinp('1. Verliebter: ')
-			v2 = intinp('2. Verliebter: ')
-			data['love'].add((v1, v2))
-		elif character == 'wolfskind':
-			dg_second_action = True
-			print('Wähle dein Idol.')
-			input()
-		elif character == 'trunkenbold':
-			dg_second_action = True
-			no = intinp('Wähle deinen heutigen Nächtigungsort: ')
-			data['protected'].add(data['roles'].index('trunkenbold'))
-			data.update({'round_tb': no})
-		elif character == 'freimaurer':
-			input()
-		elif character == 'kultführer':
-			data['cult'].add(intinp('Füge eine Person zum Kult hinzu: '))
-			
-		if character == data['doubled_role'] and dg_second_action and i == 0:
-			print()
-			print('Doppelgängerin-Aktion:')
-			role = data['roles'].index('doppelgängerin')
-		else:
-			break
-	return data
-
-
 def main():
-	players = intinp('Anzahl Spieler: ')
+	players = utils.intinp('Anzahl Spieler: ')
 	characters_game = gen_roles(inp_characters(players))
 	data: dict = {
-		'love': {},
-		'protected': {},
-		'cult': {},
+		'love': set(),
+		'cult': set(),
+		'round_protected': set(),
+		'round_deaths': set(),
+		'round_werwolve_deaths': set(),
+		'round_2_werwolve_deaths': False,
+		'witch_potions': {'heal': True, 'death': True},
 	}
 	data.update({'roles': characters_game})
 	nightnum = 0
 	while True:
-		current_night = set(characters_night)
+		current_night = []
+		for character in gdata.characters_night:
+			if not character in current_night and character in characters_game:
+				current_night.append(character)
 		if nightnum == 0:
-			current_night.add(characters_first_night)
+			for character in gdata.characters_first_night:
+				if not character in current_night and character in characters_game:
+					current_night.append(character)
 		if nightnum % 2:
-			current_night.add(characters_alternate_night)
-		time.sleep(3)
+			for character in gdata.characters_alternate_night:
+				if not character in current_night and character in characters_game:
+					current_night.append(character)
+		
+		time.sleep(2)
 		print('\n')
 		print('Das Dorf schläft ein!')
 		for current_character in current_night:
-			if current_character in characters_game:
-				time.sleep(3)
-				print('\n')
-				print(f'{current_character.title()}: Wache auf!')
-				data = character_action(current_character, data)
-				print(f'{current_character.title()}: Schlafe wieder ein.')
+			time.sleep(2)
+			print('\n')
+			print(f'{current_character.title()}: Wache auf!')
+			data = actions.character_action(current_character, data)
+			print(f'{current_character.title()}: Schlafe wieder ein.')
 		print('\n')
 		print('Das Dorf wacht auf.')
 		print(data)
 		nightnum += 1
+		input('Nächste Nacht: ')
 
 
 if __name__ == "__main__":
