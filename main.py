@@ -1,4 +1,6 @@
-import time
+import time, random
+
+from charset_normalizer.cd import characters_popularity_compare
 
 characters = {
 	'd': 'dorfbewohner',
@@ -39,14 +41,14 @@ characters = {
 	'g': 'goethe',
 	'mm': 'milchmann',
 }
-first_night = [
+characters_first_night = [
 	'doppelgängerin',
 	'freimaurer',
 	'amor',
 	'jaguar',
 	'wolfskind',
 ]
-night = [
+characters_night = [
 	'trunkenbold',
 	'kultführer',
 	'priester',
@@ -63,9 +65,10 @@ night = [
 	'goethe',
 	'milchmann'
 ]
-second_night = [
+characters_alternate_night = [
 	'weißer werwolf'
 ]
+
 
 def intinp(txt: str) -> int:
 	inp = None
@@ -76,6 +79,7 @@ def intinp(txt: str) -> int:
 		except ValueError:
 			print('Gebe eine Zahl ein.')
 	return inp
+
 
 def inp_characters(n: int) -> tuple:
 	characters_game = []
@@ -100,48 +104,79 @@ def inp_characters(n: int) -> tuple:
 			print('Too many roles')
 	return tuple(characters_game)
 
-def gen_roles(characters_game: tuple) -> dict:
+
+def gen_roles(characters_game: tuple) -> tuple:
+	characters_game = list(characters_game)
+	random.shuffle(characters_game)
+	print('\n')
+	print('Rolen:')
+	for i in range(len(characters_game)):
+		print(f'{i + 1}: {characters_game[i].title()}')
+	return tuple(characters_game)
 
 
 def character_action(character: str, data: dict) -> dict:
-	person = data['roles'].index(character)
-	if character == 'doppelgängerin':
-		gd = intinp('Wähle deine gedoppelte Person: ')
-		if 'connected' in data:
-			data['connected'].append((gd,person))
+	role = None
+	for i in range(2):
+		dg_second_action = None
+		if character == 'doppelgängerin':
+			gd = intinp('Wähle deine gedoppelte Person: ')
+			data.update({'doubled_person': gd})
+			data.update({'doubled_role': data['roles'][gd - 1]})
+		elif character == 'freimaurer':
+			input()
+		elif character in ('amor', 'jaguar'):
+			dg_second_action = True
+			v1 = intinp('1. Verliebter: ')
+			v2 = intinp('2. Verliebter: ')
+			data['love'].append((v1, v2))
+		elif character == 'wolfskind':
+			dg_second_action = True
+			print('Wähle dein Idol.')
+			input()
+		elif character == 'trunkenbold':
+			dg_second_action = True
+			no = intinp('Wähle deinen heutigen Nächtigungsort: ')
+			data['protected'].append(data['roles'].index('trunkenbold'))
+			data.update({'round_tb': no})
+		if character == data['doubled_role'] and dg_second_action and i == 0:
+			print()
+			print('Doppelgängerin-Aktion:')
+			role = data['roles'].index('doppelgängerin')
 		else:
-			data.update({'connected': [(gd,person)]})
-	elif character == 'freimaurer':
-		input()
-	elif character in ('amor', 'jaguar'):
-		v1 = intinp('1. Verliebter: ')
-		v2 = intinp('2. Verliebter: ')
-		if 'connected' in data:
-			data['connected'].append((v1,v2))
-		else:
-			data.update({'connected': [(v1, v2)]})
-	elif character == 'wolfskind':
-		print('Wähle dein Idol.')
-		input()
-	elif character == 'trunkenbold':
-		pass
+			break
 	return data
 
 
 def main():
 	players = intinp('Anzahl Spieler: ')
-	characters_game = inp_characters(players)
-	gen_roles(characters_game)
-	data = {}
-	for current_character in first_night:
-		if current_character in characters_game:
-			print('\n')
-			print(f'{current_character.title()}: Wache auf!')
-			data = character_action(current_character, data)
-			print(f'{current_character.title()}: Schlafe wieder ein.')
-			time.sleep(3)
-	print(data)
-
+	characters_game = gen_roles(inp_characters(players))
+	data: dict = {
+		'love': [],
+		'protected': [],
+	}
+	data.update({'roles': characters_game})
+	nightnum = 0
+	while True:
+		current_night = set(characters_night)
+		if nightnum == 0:
+			current_night.add(characters_first_night)
+		if nightnum % 2:
+			current_night.add(characters_alternate_night)
+		time.sleep(3)
+		print('\n')
+		print('Das Dorf schläft ein!')
+		for current_character in current_night:
+			if current_character in characters_game:
+				time.sleep(3)
+				print('\n')
+				print(f'{current_character.title()}: Wache auf!')
+				data = character_action(current_character, data)
+				print(f'{current_character.title()}: Schlafe wieder ein.')
+		print('\n')
+		print('Das Dorf wacht auf.')
+		print(data)
+		nightnum += 1
 
 if __name__ == "__main__":
 	main()
