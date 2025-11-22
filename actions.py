@@ -110,6 +110,23 @@ def character_action(character: str, data: dict) -> dict:
 	return data
 
 def after_night(data: dict) -> dict:
+	result = {
+		'deaths': []
+	}
+	for death in data['round_deaths']:
+		result['deaths'].append(death)
+		for lovers in data['love']:
+			if death in lovers:
+				result['deaths'].append(lovers[0 if lovers.index(death) else 1])
+		if death == data['doubled_person']:
+			result['deaths'].append(data['roles'].index('doppelgängerin'))
+		elif death == data['roles'].index('jäger'):
+			result['deaths'].append(utils.intinp('Jägerschuss: '))
+		elif death == data['roles'].index('jaguar'):
+			result['deaths'].append(utils.intinp('Jaguarschuss: '))
+	for death in result['deaths']:
+		if death in data['round_protected']:
+			result['deaths'].remove(death)
 	for key in data:
 		if key.startswith('round_') and not key == 'round_vampire_deaths':
 			if type(data[key]) == bool:
@@ -118,21 +135,14 @@ def after_night(data: dict) -> dict:
 				data[key] = []
 			else:
 				data[key] = None
-	result = {
-		'deaths': []
-	}
-	for death in data['round_deaths']:
-		result['deaths'].append(death)
-		for lovers in data['love']:
-			if death in data['protected']:
-				if death in lovers:
-					result['deaths'].append(lovers[0 if lovers.index(death) else 1])
-				if death == data['doubled_person']:
-					result['deaths'].append(data['roles'].index('doppelgängerin'))
-				elif death == data['roles'].index('jäger'):
-					result['deaths'].append(utils.intinp('Jägerschuss: '))
-				elif death == data['roles'].index('jaguar'):
-					result['deaths'].append(utils.intinp('Jaguarschuss: '))
+	data['alive'].remove(*result['deaths'])
+	if set(data['alive']).issubset(set(data['cult'])):
+		print('Der Kultführer hat das Spiel alleinig gewonnen.')
+		sys.exit()
+	tmp = tuple(data['alive_roles'])
+	for role in tmp:
+		if not role in [data['roles'][i] for i in data['alive']]:
+			data['alive_roles'].remove(role)
 	for death in result['deaths']:
 		if death == data['roles'].index('wolfsjunges'):
 			data['round_2_werwolve_deaths'] = True
@@ -143,7 +153,5 @@ def after_night(data: dict) -> dict:
 			elif death in data['vampire_deaths']:
 				data['round_verfluchter_vampire'] = True
 				result['deaths'].remove(death)
-	if set(data['alive']).issubset(set(data['cult'])):
-		print('Der Kultführer hat das Spiel alleinig gewonnen.')
-		sys.exit()
+	
 	return data

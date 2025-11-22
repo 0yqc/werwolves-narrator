@@ -42,7 +42,8 @@ def main():
 	characters_game = gen_roles(inp_characters(players))
 	data: dict = {
 		'roles': characters_game,
-		'alive': list(characters_game),
+		'alive': list(range(len(characters_game))),
+		'alive_roles': list(characters_game),
 		'love': [],
 		'cult': [],
 		'witch_potions': {'heal': True, 'death': True},
@@ -68,14 +69,14 @@ def main():
 		current_night = []
 		if nightnum == 0:
 			for character in gdata.characters_first_night:
-				if not character in current_night and character in characters_game:
+				if not character in current_night and character in data['alive_roles']:
 					current_night.append(character)
 		for character in gdata.characters_night:
-			if not character in current_night and character in characters_game:
+			if not character in current_night and character in data['alive_roles']:
 				current_night.append(character)
 		if nightnum % 2:
 			for character in gdata.characters_alternate_night:
-				if not character in current_night and character in characters_game:
+				if not character in current_night and character in data['alive_roles']:
 					current_night.append(character)
 		
 		time.sleep(2)
