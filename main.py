@@ -41,25 +41,38 @@ def main():
 	players = utils.intinp('Anzahl Spieler: ')
 	characters_game = gen_roles(inp_characters(players))
 	data: dict = {
-		'love': set(),
-		'cult': set(),
-		'round_protected': set(),
-		'round_deaths': set(),
-		'round_werwolve_deaths': set(),
-		'round_2_werwolve_deaths': False,
+		'roles': characters_game,
+		'alive': list(characters_game),
+		'love': [],
+		'cult': [],
 		'witch_potions': {'heal': True, 'death': True},
+		'doubled_person': None,
+		'doubled_role': None,
+		'round_protected': [],
+		'round_deaths': [],
+		'round_werwolve_deaths': [], # also included in round_deaths
+		'round_2_werwolve_deaths': False,
+		'round_vampire_deaths': [], # not included in round_deaths
+		'round_verfluchter_werwolve': False,
+		'round_verfluchter_vampire': False,
+		'round_trunkenbold': None,
+		'round_trunkenbold_doubled': False,
+		'round_altevettel': [],
+		'round_beschwörerin': [],
+		'round_goethe': [],
+		'round_milch': {},
 	}
-	data.update({'roles': characters_game})
 	nightnum = 0
 	while True:
+		input('Nacht starten: ')
 		current_night = []
-		for character in gdata.characters_night:
-			if not character in current_night and character in characters_game:
-				current_night.append(character)
 		if nightnum == 0:
 			for character in gdata.characters_first_night:
 				if not character in current_night and character in characters_game:
 					current_night.append(character)
+		for character in gdata.characters_night:
+			if not character in current_night and character in characters_game:
+				current_night.append(character)
 		if nightnum % 2:
 			for character in gdata.characters_alternate_night:
 				if not character in current_night and character in characters_game:
@@ -71,14 +84,13 @@ def main():
 		for current_character in current_night:
 			time.sleep(2)
 			print('\n')
-			print(f'{current_character.title()}: Wache auf!')
+			print(f'{current_character.title()} ({data['roles'].index(current_character) + 1}): Wache auf!')
 			data = actions.character_action(current_character, data)
 			print(f'{current_character.title()}: Schlafe wieder ein.')
 		print('\n')
 		print('Das Dorf wacht auf.')
-		print(data)
+		data = actions.after_night(data)
 		nightnum += 1
-		input('Nächste Nacht: ')
 
 
 if __name__ == "__main__":
