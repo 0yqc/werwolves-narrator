@@ -1,0 +1,2 @@
+def night():
+	pass

@@ -1,0 +1,78 @@
+{
+	"en": {
+		"roles": {
+			"werewolf": "Werewolf",
+			"wild_child": "Wild Child",
+			"wolf_cub": "Wolf Cub",
+			"white_werewolf": "White Werewolf",
+			"vampire": "Vampire",
+			"cursed": "Cursed One",
+			"tanner": "Tanner",
+			"freemason": "Freemason",
+			"drunkard": "Drunkard",
+			"seer": "Seer",
+			"oracle": "Oracle",
+			"apprentice_seer": "Apprentice Seer",
+			"aurum_seer": "Aurum Seer",
+			"witch": "Witch",
+			"healer": "Healer",
+			"cupid": "Cupid",
+			"hunter": "Hunter",
+			"jaguar": "Jaguar",
+			"priest": "Priest",
+			"bodyguard": "Bodyguard",
+			"knight_with_rusty_sword": "The Knight with the Rusty Sword",
+			"devoted_servant": "Maid",
+			"old_hag": "Old Hag",
+			"conjurer": "Conjurer",
+			"goethe": "Goethe",
+			"milkman": "Milkman"
+		},
+		"misc": {
+			"language_inp": "Language:",
+			"wrong_type": "Wrong type. Please enter a value of the following type:",
+			"inp_empty": "Please enter a value.",
+			"inp_not_allowed": "Value is not allowed, please enter any of:",
+			"true": "yes",
+			"false": "no"
+		}
+	},
+	"de": {
+		"roles": {
+			"werewolf": "Werwolf",
+			"wild_child": "Wildes Kind",
+			"wolf_cub": "Wolfsjunges",
+			"white_werewolf": "Weißer Werwolf",
+			"vampire": "Vampir",
+			"cursed": "Verfluchter",
+			"tanner": "Gerber",
+			"freemason": "Freimaurer",
+			"drunkard": "Trunkenbold",
+			"seer": "Seherin",
+			"oracle": "Seher",
+			"apprentice_seer": "Seherlehrling",
+			"aurum_seer": "Auraseherin",
+			"witch": "Hexe",
+			"healer": "Magier",
+			"cupid": "Amor",
+			"hunter": "Jäger",
+			"jaguar": "Jaguar",
+			"priest": "Priester",
+			"bodyguard": "Leibwächter",
+			"knight_with_rusty_sword": "Der Ritter mit der rostigen Klinge",
+			"devoted_servant": "Magd",
+			"old_hag": "Alte Vettel",
+			"conjurer": "Beschwörerin",
+			"goethe": "Goethe",
+			"milkman": "Milchmann"
+		},
+		"misc": {
+			"language_inp": "Sprache:",
+			"wrong_type": "Falscher Typ. Bitte gebe ein Wert mit dem folgenden Typ ein:",
+			"inp_empty": "Bitte mache eine Eingabe.",
+			"inp_not_allowed": "Wert ist nicht erlaubt, bitte gebe einen der folgenden ein:",
+			"true": "Ja",
+			"false": "Nein"
+		}
+	}
+}
