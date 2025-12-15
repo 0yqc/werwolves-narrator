@@ -109,7 +109,7 @@ def character_action(character: str, data: dict) -> dict:
 			break
 	return data
 
-def after_night(data: dict) -> dict:
+def after_night(data: dict) -> tuple[dict, dict]:
 	result = {
 		'deaths': []
 	}
@@ -117,13 +117,22 @@ def after_night(data: dict) -> dict:
 		result['deaths'].append(death)
 		for lovers in data['love']:
 			if death in lovers:
-				result['deaths'].append(lovers[0 if lovers.index(death) else 1])
+				result['deaths'].append(lovers[0 if lovers.index(death) else 1]) # always the other love partner
 		if death == data['doubled_person']:
-			result['deaths'].append(data['roles'].index('doppelgängerin'))
-		elif death == data['roles'].index('jäger'):
-			result['deaths'].append(utils.intinp('Jägerschuss: '))
-		elif death == data['roles'].index('jaguar'):
-			result['deaths'].append(utils.intinp('Jaguarschuss: '))
+			try:
+				result['deaths'].append(data['roles'].index('doppelgängerin'))
+			except ValueError:
+				pass
+		try:
+			if death == data['roles'].index('jäger'):
+				result['deaths'].append(utils.intinp('Jägerschuss: '))
+		except ValueError:
+			pass
+		try:
+			if death == data['roles'].index('jaguar'):
+				result['deaths'].append(utils.intinp('Jaguarschuss: '))
+		except ValueError:
+			pass
 	for death in result['deaths']:
 		if death in data['round_protected']:
 			result['deaths'].remove(death)
@@ -144,14 +153,20 @@ def after_night(data: dict) -> dict:
 		if not role in [data['roles'][i] for i in data['alive']]:
 			data['alive_roles'].remove(role)
 	for death in result['deaths']:
-		if death == data['roles'].index('wolfsjunges'):
-			data['round_2_werwolve_deaths'] = True
-		elif death == data['roles'].index('verfluchter'):
-			if death in data['werwolve_deaths']:
-				data['round_verfluchter_werwolve'] = True
-				result['deaths'].remove(death)
-			elif death in data['vampire_deaths']:
-				data['round_verfluchter_vampire'] = True
-				result['deaths'].remove(death)
+		try:
+			if death == data['roles'].index('wolfsjunges'):
+				data['round_2_werwolve_deaths'] = True
+		except ValueError:
+			pass
+		try:
+			if death == data['roles'].index('verfluchter'):
+				if death in data['werwolve_deaths']:
+					data['round_verfluchter_werwolve'] = True
+					result['deaths'].remove(death)
+				elif death in data['vampire_deaths']:
+					data['round_verfluchter_vampire'] = True
+					result['deaths'].remove(death)
+		except ValueError:
+			pass
 	
-	return data
+	return data, result

@@ -90,7 +90,9 @@ def main():
 			print(f'{current_character.title()}: Schlafe wieder ein.')
 		print('\n')
 		print('Das Dorf wacht auf.')
-		data = actions.after_night(data)
+		data, result = actions.after_night(data)
+		for death in result['deaths']:
+			print(f'Death: {data['roles'][death]}')
 		nightnum += 1
 
 
