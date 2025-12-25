@@ -8,4 +8,4 @@ Currently, German-only in all print statements, might be extended later on. Help
 
 # Installation
 
-As I use a Linux-system, to my knowledge I can't provide a Windows executable and have decided against making a Linux-only release, as Python is run easily on all systems. To run, you need a terminal open in `werwolves_narrator` (achieve using `cd /path/to/werwolves_narrator/`) and run `python ./main.py`.
+Run the binary in the terminal (Linux only)

@@ -1,0 +1,413 @@
+#!/usr/bin/env python
+
+import random, time, sys
+
+# DATA
+
+abreviations = {
+	'd': 'dorfbewohner',
+
+	'w': 'werwolf',
+	'v': 'vampir',
+
+	'fm': 'freimaurer',
+
+	'wj': 'wolfsjunges',
+	'wk': 'wolfskind',
+	'vf': 'verfluchter',
+	'ww': 'weißer werwolf',
+
+	'dg': 'doppelgängerin',
+
+	'tb': 'trunkenbold',
+	'ge': 'gerber',
+
+	'h': 'hexe',
+	'm': 'magier',
+	'kf': 'kultführer',
+
+	's': 'seherin',
+	's2': 'seher',
+	'as': 'aura-seherin',
+	'sl': 'seher-lehrling',
+
+	'a': 'amor',
+	'j': 'jäger',
+	'ja': 'jaguar',
+
+	'p': 'priester',
+	'lw': 'leibwächter',
+
+	'av': 'alte vettel',
+	'b': 'beschwörerin',
+	'g': 'goethe',
+	'mm': 'milchmann',
+}
+characters_first_night = (
+	'doppelgängerin',
+	'amor',
+	'jaguar',
+	'wolfskind',
+)
+characters_night = (
+	'trunkenbold',
+	'freimaurer',
+	'kultführer',
+	'priester',
+	'leibwächter',
+	'seherin',
+	'seher',
+	'aura-seherin',
+	'werwolf',
+	'hexe',
+	'magier',
+	'vampir',
+	'alte vettel',
+	'beschwörerin',
+	'goethe',
+	'milchmann',
+)
+characters_alternate_night = (
+	'weißer werwolf',
+)
+characters_werwolves = [
+	'werwolf',
+	'wolfsjunges',
+	'weißer werwolf'
+]
+characters_vampires = [
+	'vampir'
+]
+characters_village = [
+	'dorfbewohner',
+	'freimaurer',
+	'trunkenbold',
+	'gerber',
+	'hexe',
+	'magier',
+	'kultführer',
+	'seherin',
+	'seher',
+	'seher-lehrling',
+	'aura-seherin',
+	'amor',
+	'jäger',
+	'jaguar',
+	'priester',
+	'leibwächter',
+	'alte vettel',
+	'beschwörerin',
+	'goethe',
+	'milchmann',
+	'verfluchter',
+	'wolfskind',
+]
+
+
+# UTILS
+
+def intinp(txt: str) -> int:
+	inp = None
+	while type(inp) != int:
+		inp = input(txt)
+		try:
+			inp = int(inp)
+		except ValueError:
+			print('Gebe eine Zahl ein.')
+	return inp
+
+
+def boolinp(txt: str) -> bool:
+	while True:
+		inp = input(txt)
+		if inp.lower() in ('ja', 'yes', 'true', '1'):
+			return True
+		elif inp.lower() in ('nein', 'no', 'false', '0'):
+			return False
+		else:
+			print('Gebe deine Entscheidung ein (ja/nein).')
+
+
+def milkinp(txt: str) -> bool:
+	"""
+	:return True: Gute Milch; False: Schlechte Milch
+	"""
+	while True:
+		inp = input(txt)
+		if inp.lower() in ('gut', 'good', '1'):
+			return True
+		elif inp.lower() in ('schlecht', 'bad', '0'):
+			return False
+		else:
+			print('Gebe deine Entscheidung ein (gut/schlecht).')
+
+# ACTIONS
+
+
+def character_action(character: str, data: dict) -> dict:
+	dg_action = None
+	# ap: short for affected person
+	for i in range(2):
+		dg_second_action = None
+		if character == 'doppelgängerin':
+			ap = intinp('Wähle deine gedoppelte Person: ')
+			data['doubled_person'] = ap - 1
+			data['doubled_role'] = data['roles'][ap - 1]
+		elif character in ('amor', 'jaguar'):
+			dg_second_action = True
+			v1 = intinp('1. Verliebter: ')
+			v2 = intinp('2. Verliebter: ')
+			data['love'].append((v1, v2))
+		elif character == 'wolfskind':
+			dg_second_action = True
+			print('Wähle dein Idol.')
+			input()
+		elif character == 'trunkenbold':
+			dg_second_action = True
+			ap = intinp('Wähle deinen heutigen Nächtigungsort: ')
+			if dg_action:
+				data['round_protected'].append(data['roles'].index('doppelgängerin'))
+				data['round_trunkenbold_doubled'] = ap - 1
+			else:
+				data['round_protected'].append(data['roles'].index('trunkenbold'))
+				data['round_trunkenbold'] = ap - 1
+		elif character == 'freimaurer':
+			input('Fertig: ')
+		elif character == 'kultführer':
+			dg_second_action = True
+			data['cult'].append(intinp('Füge eine Person zum Kult hinzu: ') - 1)
+		elif character in ('priester', 'leibwächter'):
+			dg_second_action = True
+			data['round_protected'].append(intinp('geschützte Person: ') - 1)
+		elif character in ('seherin', 'seher'):
+			dg_second_action = True
+			ap = intinp('zu erkenennde Person: ')
+			print(data['roles'][ap - 1].title())
+			time.sleep(1)
+		elif character == 'aura-seherin':
+			dg_second_action = True
+			ap = intinp('zu erkenennde Person: ')
+			print('Gut' if data['roles'][ap - 1] in characters_village else 'Böse')
+			time.sleep(1)
+		elif character == 'werwolf':
+			if data['round_verfluchter_werwolve']:
+				print('Der Verfluchte wacht mit auf.')
+			ap = intinp('Opfer: ')
+			data['round_deaths'].append(ap - 1)
+			data['round_werwolve_deaths'].append(ap - 1)
+			if data['round_2_werwolve_deaths']:
+				ap = intinp('2. Opfer: ')
+				data['round_deaths'].append(ap - 1)
+				data['round_werwolve_deaths'].append(ap - 1)
+		elif character in ('hexe', 'magier'):
+			dg_second_action = True
+			print(f'Opfer: {', '.join(f'{i + 1}. {data['roles'][ap].title()} ({ap + 1})' for i, ap in enumerate(data['round_werwolve_deaths']))}; ')
+			if boolinp('Möchtest du das Opfer heilen? '):
+				data['witch_potions']['heal'] = False
+				if len(data['round_werwolve_deaths']) != 1:
+					ap = intinp('Welches Opfer? ') - 1
+				else:
+					ap = 0
+				data['round_deaths'].remove(data['round_werwolve_deaths'][ap])
+				data['round_werwolve_deaths'].pop(ap)
+			ap = intinp('Opfer: ')
+			if ap:
+				data['witch_potions']['death'] = False
+				data['round_deaths'].append(ap - 1)
+		elif character == 'vampir':
+			if data['round_verfluchter_vampire']:
+				print('Der Verfluchte wacht mit auf.')
+			ap = intinp('Opfer: ')
+			data['round_vampire_deaths'].append(ap - 1)
+		elif character == 'alte vettel':
+			dg_second_action = True
+			ap = intinp('verfluchte Person: ')
+			data['round_altevettel'].append(ap - 1)
+		elif character == 'bechwörerin':
+			dg_second_action = True
+			ap = intinp('beschwörte Person: ')
+			data['round_beschwörerin'].append(ap - 1)
+		elif character == 'goethe':
+			dg_second_action = True
+			ap = intinp('vergoethete Person: ')
+			data['round_goethe'].append(ap - 1)
+		elif character == 'milchmann':
+			dg_second_action = True
+			ap = intinp('Person: ')
+			typ = milkinp('Typ: ')
+			data['round_milch'].update({ap - 1: typ})
+		elif character == 'weißer werwolf':
+			dg_second_action = True
+			ap = intinp('Opfer: ')
+			if ap:
+				data['round_deaths'].append(ap - 1)
+
+		if 'doppelgängerin' in data['roles'] and character == data['doubled_role'] and dg_second_action and i == 0:
+			print()
+			print('Doppelgängerin-Aktion:')
+			dg_action = True
+		else:
+			break
+	return data
+
+
+def after_night(data: dict) -> tuple[dict, dict]:
+	result = {
+		'deaths': []
+	}
+	for death in data['round_deaths']:
+		result['deaths'].append(death)
+		for lovers in data['love']:
+			if death in lovers:
+				result['deaths'].append(lovers[0 if lovers.index(death) else 1])  # always the other love partner
+		if death == data['doubled_person']:
+			try:
+				result['deaths'].append(data['roles'].index('doppelgängerin'))
+			except ValueError:
+				pass
+		try:
+			if death == data['roles'].index('jäger'):
+				result['deaths'].append(intinp('Jägerschuss: '))
+		except ValueError:
+			pass
+		try:
+			if death == data['roles'].index('jaguar'):
+				result['deaths'].append(intinp('Jaguarschuss: '))
+		except ValueError:
+			pass
+	for death in result['deaths']:
+		if death in data['round_protected']:
+			result['deaths'].remove(death)
+	for key in data:
+		if key.startswith('round_') and not key == 'round_vampire_deaths':
+			if type(data[key]) == bool:
+				data[key] = False
+			elif type(data[key]) == list:
+				data[key] = []
+			else:
+				data[key] = None
+	data['alive'].remove(*result['deaths'])
+	if set(data['alive']).issubset(set(data['cult'])):
+		print('Der Kultführer hat das Spiel alleinig gewonnen.')
+		sys.exit()
+	tmp = tuple(data['alive_roles'])
+	for role in tmp:
+		if not role in [data['roles'][i] for i in data['alive']]:
+			data['alive_roles'].remove(role)
+	for death in result['deaths']:
+		try:
+			if death == data['roles'].index('wolfsjunges'):
+				data['round_2_werwolve_deaths'] = True
+		except ValueError:
+			pass
+		try:
+			if death == data['roles'].index('verfluchter'):
+				if death in data['werwolve_deaths']:
+					data['round_verfluchter_werwolve'] = True
+					result['deaths'].remove(death)
+				elif death in data['vampire_deaths']:
+					data['round_verfluchter_vampire'] = True
+					result['deaths'].remove(death)
+		except ValueError:
+			pass
+
+	return data, result
+
+# MAIN
+
+
+def inp_characters(n: int) -> tuple:
+	characters_game = []
+	while n > 0:
+		inp = input('Character: ').strip().lower()
+		if not inp:
+			print('Not enough roles')
+			continue
+		if inp in abreviations:
+			inp = abreviations[inp]
+		if not inp in abreviations.values():
+			continue
+		if inp in ['dorfbewohner', 'werwolf', 'vampir', 'freimaurer']:
+			count = intinp('Anzahl: ')
+		else:
+			count = 1
+		n -= count
+		if n >= 0:
+			for _ in range(count):
+				characters_game.append(inp)
+		else:
+			print('Too many roles')
+	return tuple(characters_game)
+
+
+def gen_roles(characters_game: tuple) -> tuple:
+	characters_game = list(characters_game)
+	random.shuffle(characters_game)
+	print('\n')
+	print('Rolen:')
+	for i in range(len(characters_game)):
+		print(f'{i + 1}: {characters_game[i].title()}')
+	return tuple(characters_game)
+
+
+def main():
+	players = intinp('Anzahl Spieler: ')
+	characters_game = gen_roles(inp_characters(players))
+	data: dict = {
+		'roles': characters_game,
+		'alive': list(range(len(characters_game))),
+		'alive_roles': list(characters_game),
+		'love': [],
+		'cult': [],
+		'witch_potions': {'heal': True, 'death': True},
+		'doubled_person': None,
+		'doubled_role': None,
+		'round_protected': [],
+		'round_deaths': [],
+		'round_werwolve_deaths': [], # also included in round_deaths
+		'round_2_werwolve_deaths': False,
+		'round_vampire_deaths': [], # not included in round_deaths
+		'round_verfluchter_werwolve': False,
+		'round_verfluchter_vampire': False,
+		'round_trunkenbold': None,
+		'round_trunkenbold_doubled': False,
+		'round_altevettel': [],
+		'round_beschwörerin': [],
+		'round_goethe': [],
+		'round_milch': {},
+	}
+	nightnum = 0
+	while True:
+		input('Nacht starten: ')
+		current_night = []
+		if nightnum == 0:
+			for character in characters_first_night:
+				if not character in current_night and character in data['alive_roles']:
+					current_night.append(character)
+		for character in characters_night:
+			if not character in current_night and character in data['alive_roles']:
+				current_night.append(character)
+		if nightnum % 2:
+			for character in characters_alternate_night:
+				if not character in current_night and character in data['alive_roles']:
+					current_night.append(character)
+		
+		time.sleep(2)
+		print('\n')
+		print('Das Dorf schläft ein!')
+		for current_character in current_night:
+			time.sleep(2)
+			print('\n')
+			print(f'{current_character.title()} ({data['roles'].index(current_character) + 1}): Wache auf!')
+			data = character_action(current_character, data)
+			print(f'{current_character.title()}: Schlafe wieder ein.')
+		print('\n')
+		print('Das Dorf wacht auf.')
+		data, result = after_night(data)
+		for death in result['deaths']:
+			print(f'Death: {data['roles'][death]}')
+		nightnum += 1
+
+
+if __name__ == "__main__":
+	main()
